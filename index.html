@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en"> 
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>birthday bakery!</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    #confettiCanvas {
+      pointer-events: none;
+      position: fixed;
+      left: 0; top: 0;
+      width: 100vw; height: 100vh;
+      z-index: 1000;
+      display: none;
+    }
+    #confettiBtn {
+      position: relative;
+      margin: 100px auto;
+      display: block;
+      padding: 16px 32px;
+      font-size: 1.3em;
+      background: #ffd2e7;
+      color: #333;
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 2px 12px #ebb3d8aa;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #confettiBtn:hover {
+      background: #ffafd6;
+    }
+    .kitchen {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 2rem;
+      margin-top: 3rem;
+      position: relative;
+    }
+    #cupcakes .kitchen {
+  height: 350px;
+  overflow: hidden;
+}
+    .ingredient {
+      width: 100px;
+      cursor: grab;
+      transition: transform 0.2s;
+    }
+
+    .ingredient:active {
+      transform: scale(1.1);
+    }
+
+    #message,
+    #cupcake-message {
+      margin-top: 1.5rem;
+      font-size: 1.3rem;
+      color: #555;
+      text-align: center;
+    }
+
+    #nextStep,
+    #nextCupcakeStep {
+      display: none;
+      margin: 2rem auto 0;
+      background-color: #ffb6b9;
+      border: none;
+      color: white;
+      padding: 0.8rem 1.6rem;
+      border-radius: 2rem;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: transform 0.2s;
+      display: none;
+    }
+
+    #nextStep:hover,
+    #nextCupcakeStep:hover {
+      transform: scale(1.1);
+      background-color: #ffa8ac;
+    }
+
+    .oven,
+    .tray,
+    .decorations {
+      display: none; 
+      position: relative;
+    }
+
+    .tray-area {
+      position: relative;
+      display: inline-block;
+    }
+
+    .decorations img {
+      width: 60px;
+      cursor: grab;
+    }
+
+    #celebrateCanvas {
+      pointer-events: none;
+      position: fixed;
+      left: 0; top: 0;
+      width: 100vw; height: 100vh;
+      z-index: 1000;
+      display: none;
+    }
+    #celebrateBtn {
+      position: relative;
+      margin: 20px auto;
+      display: block;
+      padding: 16px 32px;
+      font-size: 1.3em;
+      background: #ff9ecd;
+      color: #333;
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 2px 12px #ffb6b9aa;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #celebrateBtn:hover {
+      background: #ff7aa1;
+    }
+    #musicControls {
+      margin-top: 2rem;
+      text-align: center;
+    }
+    #nextSongBtn {
+      background-color: #ffb6b9;
+      border: none;
+      color: white;
+      padding: 0.8rem 1.6rem;
+      border-radius: 2rem;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: transform 0.2s;
+    }
+    #nextSongBtn:hover {
+      transform: scale(1.1);
+      background-color: #ffa8ac;
+    }
+    .celebration,
+    .cupcakes {
+      display: none; 
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      50% { transform: translateX(10px); }
+      75% { transform: translateX(-5px); }
+    }
+    @keyframes sparkle {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.8; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#home">home</a></li>
+        <li><a href="#cookie">make a cookie!</a></li>
+        <li id="celebration-link" style="display:none;"><a href="#celebration">celebrate!</a></li>
+        <li id="cupcakes-link" style="display:none;"><a href="#cupcakes">continue: cupcakes yay!</a></li>
+        <li id="final-link" style="display:none;"><a href="#final">thank you!!!</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section id="home" class="home">
+    <h1>birthday bakery!</h1>
+    <p>celebrate your special day with delicious homemade cookies and cupcakes!</p>
+
+    <button id="confettiBtn">but first, confetti to celebrate your awesome day!</button>
+    <canvas id="confettiCanvas"></canvas>
+  </section>
+
+  <!-- cookie game yayaya -->
+  <section id="cookie" class="cookie">
+    <h1>step 1: add ingredients to the bowl!</h1>
+
+    <p id="message">drag each ingredient into the bowl!</p>
+
+    <div class="kitchen">
+      <div class="bowl">
+        <img src="images/bowl.png" id="bowl" alt="bowl">
+      </div>
+
+      <div class="oven" id="oven">
+        <img src="images/oven.png" alt="oven">
+      </div>
+
+      <div class="tray" id="tray">
+        <div class="tray-area" id="trayArea">
+          <img src="images/tray.png" alt="cookie tray">
+        </div>
+      </div>
+
+      <div class="decorations" id="decorations">
+        <img src="images/sprinkle.png" id="sprinkle" class="decoration" draggable="true" alt="sprinkle">
+        <img src="images/heart.png" id="heart" class="decoration" draggable="true" alt="heart">
+        <img src="images/star.png" id="star" class="decoration" draggable="true" alt="star">
+      </div>
+
+      <div class="ingredients">
+        <img src="images/flour.png" id="flour" class="ingredient" draggable="true" alt="flour">
+        <img src="images/butter.png" id="butter" class="ingredient" draggable="true" alt="butter">
+        <img src="images/egg.png" id="egg" class="ingredient" draggable="true" alt="eggs">
+        <img src="images/vanilla.png" id="vanilla" class="ingredient" draggable="true" alt="vanilla">
+        <img src="images/sugar.png" id="sugar" class="ingredient" draggable="true" alt="sugar">
+      </div>
+    </div>
+
+    <button id="nextStep">next step</button>
+  </section>
+
+  <script>
+    const steps = [
+      { title: "step 1: add ingredients to the bowl!", message: "drag ingredients into the bowl!" },
+      { title: "step 2: let's mix everything together!", message: "mixing in progress..." },
+      { title: "step 3: bake the cookies!", message: "put the cookies in the oven!" },
+      { title: "step 4: decorate your cookies!", message: "drag decorations onto your cookie tray!" },
+      { title: "step 5: enjoy!", message: "yum yum yummers! you did it! ✨" }
+    ];
+
+    let currentStep = 0;
+    let added = [];
+
+    const bowl = document.getElementById('bowl');
+    const message = document.getElementById('message');
+    const nextStepBtn = document.getElementById('nextStep');
+    const header = document.querySelector('#cookie h1');
+    const ingredients = document.querySelectorAll('#cookie .ingredient');
+    const cupcakeIngredients = document.querySelectorAll('#cupcakes .ingredient');
+    const oven = document.getElementById('oven');
+    const tray = document.getElementById('tray');
+    const decorations = document.getElementById('decorations');
+    const trayArea = document.getElementById('trayArea');
+
+    ingredients.forEach(item => {
+      item.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', item.id);
+      });
+    });
+    cupcakeIngredients.forEach(item => {
+    item.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('text/plain', item.id);
+     });
+    });
+
+    bowl.addEventListener('dragover', e => e.preventDefault());
+
+    bowl.addEventListener('drop', e => {
+      const id = e.dataTransfer.getData('text/plain');
+      const ingredient = document.getElementById(id);
+
+      if (!added.includes(id)) {
+        added.push(id);
+        ingredient.style.opacity = "0.5";
+        message.textContent = `you added ${id}! `;
+
+        if (added.length === ingredients.length) {
+          message.textContent = "all ingredients added! click 'next step' to mix!";
+          nextStepBtn.style.display = "inline-block";
+        }
+      }
+    });
+    document.querySelectorAll('#cookie .decoration').forEach(dec => {
+      dec.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', dec.id);
+      });
+    });
+
+    trayArea.addEventListener('dragover', e => e.preventDefault());
+
+    trayArea.addEventListener('drop', e => {
+      const id = e.dataTransfer.getData('text/plain');
+      const dec = document.getElementById(id);
+      if (!dec) return;
+
+      const clone = dec.cloneNode(true);
+      clone.draggable = false;
+      clone.style.position = "absolute";
+
+      const rect = trayArea.getBoundingClientRect();
+      clone.style.left = `${e.clientX - rect.left - 30}px`;
+      clone.style.top = `${e.clientY - rect.top - 30}px`;
+
+      clone.style.animation = "sparkle 0.6s ease";
+      trayArea.appendChild(clone);
+    });
+
+    nextStepBtn.addEventListener("click", () => {
+      currentStep++;
+      if (currentStep < steps.length) {
+        header.textContent = steps[currentStep].title;
+        message.textContent = steps[currentStep].message;
+        nextStepBtn.style.display = "none";
+
+        if (currentStep === 1) {
+          bowl.style.animation = "shake 1s ease-in-out 3";
+          setTimeout(() => (nextStepBtn.style.display = "inline-block"), 1500);
+        } 
+        else if (currentStep === 2) {
+          oven.style.display = "flex";
+          oven.style.animation = "ovenGlow 1s ease-in-out infinite";
+          message.textContent = "baking... (cookie smell incoming!)";
+
+          setTimeout(() => {
+            oven.style.animation = "none";
+            message.textContent = "cookies are baked! click next step!";
+            nextStepBtn.style.display = "inline-block";
+          }, 3000);
+        } 
+        else if (currentStep === 3) {
+          oven.style.display = "none";
+          tray.style.display = "flex";
+          decorations.style.display = "flex";
+          message.textContent = "time to decorate! drag decorations onto your cookies";
+          nextStepBtn.style.display = "inline-block";
+        } 
+        else if (currentStep === 4) {
+          tray.style.display = "none";
+          decorations.style.display = "none";
+          message.textContent = "yum yum yummers! you did it! ✨";
+          nextStepBtn.style.display = "none";
+          if (window.showCelebration) window.showCelebration();
+          if (window.showCupcakes) window.showCupcakes();
+        }
+      }
+    });
+  </script>
+  <!-- celebration  -->
+  <section id="celebration" class="celebration">
+    <h1>congratulations, cookie master! </h1>
+    <p>you baked, mixed, and decorated with love. time to celebrate!</p>
+    <button id="celebrateBtn">throw more celebratory confetti!</button>
+    <canvas id="celebrateCanvas"></canvas>
+
+    <div id="musicControls">
+      <button id="nextSongBtn">🎶 next song</button>
+      <audio id="bgMusic" loop></audio>
+    </div>
+  </section>
+
+  <script>
+    const btn = document.getElementById('confettiBtn');
+    const canvas = document.getElementById('confettiCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    const confettiColors = [
+      '#e7b6b1', 
+      '#efc9d1', 
+      '#f7caca', 
+      '#db8f7a', 
+      '#ffcfd2',
+      '#fbb1b1', 
+      '#f3a6b5',
+      '#ffedf3' 
+    ];
+    let confettis = [];
+
+    function randomColor() {
+      return confettiColors[Math.floor(Math.random() * confettiColors.length)];
+    }
+
+    function spawnConfetti(x, y, count = 50) {
+      confettis = [];
+      for (let i = 0; i < count; i++) {
+        confettis.push({
+          x, y,
+          r: Math.random() * 4 + 4,
+          color: randomColor(),
+          vx: (Math.random() - 0.5) * 5,
+          vy: Math.random() * -6 - 1,
+        });
+      }
+      canvas.style.display = 'block';
+      requestAnimationFrame(drawConfetti);
+    }
+
+    function drawConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let visible = false;
+      for (const conf of confettis) {
+        conf.x += conf.vx;
+        conf.y += conf.vy;
+        conf.vy += 0.18;
+        ctx.beginPath();
+        ctx.arc(conf.x, conf.y, conf.r, 0, Math.PI * 2);
+        ctx.fillStyle = conf.color;
+        ctx.fill();
+        if (conf.y < canvas.height + 20) visible = true;
+      }
+      if (visible) {
+        requestAnimationFrame(drawConfetti);
+      } else {
+        canvas.style.display = 'none';
+      }
+    }
+
+    btn.addEventListener('click', () => {
+      resizeCanvas();
+      const rect = btn.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      spawnConfetti(x, y, 40);
+    });
+
+    window.addEventListener('resize', resizeCanvas);
+  </script>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const celebrationSection = document.getElementById("celebration");
+      const celebrateBtn = document.getElementById("celebrateBtn");
+      const canvas = document.getElementById("celebrateCanvas");
+      const ctx = canvas.getContext("2d");
+      
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      const colors = ["#ff9ecd", "#ffd2e7", "#ffc1cc", "#fff1f5", "#ffb6b9"];
+      let confettis = [];
+
+      function launchConfetti(x, y, count = 70) {
+        confettis = [];
+        for (let i = 0; i < count; i++) {
+          confettis.push({
+            x, y,
+            r: Math.random() * 5 + 3,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            vx: (Math.random() - 0.5) * 6,
+            vy: Math.random() * -8 - 2
+          });
+        }
+        canvas.style.display = "block";
+        requestAnimationFrame(draw);
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let visible = false;
+        for (const c of confettis) {
+          c.x += c.vx;
+          c.y += c.vy;
+          c.vy += 0.2;
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+          ctx.fillStyle = c.color;
+          ctx.fill();
+          if (c.y < canvas.height + 20) visible = true;
+        }
+        if (visible) requestAnimationFrame(draw);
+        else canvas.style.display = "none";
+      }
+
+      celebrateBtn.addEventListener("click", () => {
+        resizeCanvas();
+        launchConfetti(window.innerWidth / 2, window.innerHeight / 3);
+      });
+      window.addEventListener("resize", resizeCanvas);
+
+      window.showCelebration = () => {
+        celebrationSection.style.display = "block";
+        document.getElementById("celebration-link").style.display = "inline-block";
+        celebrationSection.scrollIntoView({ behavior: "smooth" });
+      };
+    });
+  </script>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const songs = [
+        "music/song1.mp3",
+        "music/song2.mp3",
+        "music/song3.mp3",
+        "music/song4.mp3"
+      ];
+      let currentSong = 0;
+      const bgMusic = document.getElementById("bgMusic");
+      const nextSongBtn = document.getElementById("nextSongBtn");
+
+      if (!bgMusic || !nextSongBtn) return;
+
+      bgMusic.volume = 0.6;
+      nextSongBtn.addEventListener("click", () => {
+        bgMusic.src = songs[currentSong];
+        bgMusic.play();
+        nextSongBtn.textContent = `🎵 now playing song ${currentSong + 1}`;
+        currentSong = (currentSong + 1) % songs.length;
+      });
+    });
+  </script>
+
+  <!-- cupcake GAME TIMEEEE -->
+<section id="cupcakes" class="cupcakes">
+  <h1>cupcake time! it's gonna get harder... >:D </h1>
+
+  <p id="cupcake-message">drag each ingredient into the bowl to start your cupcakes!</p>
+
+  <p id="mixCounter" style="display:none; font-size: 1.4rem; color:#333; margin-top:1rem;">
+    0 / 100 mixes
+  </p>
+
+  <div class="kitchen">
+    <div class="bowl">
+      <img src="images/bowl.png" id="cupcake-bowl" alt="cupcake bowl">
+    </div>
+
+    <div class="oven" id="cupcake-oven">
+      <img src="images/oven.png" alt="cupcake oven">
+    </div>
+  </div> 
+  <div class="ingredients">
+    <img src="images/flour.png" id="cupcake-flour" class="ingredient" draggable="true">
+    <img src="images/butter.png" id="cupcake-butter" class="ingredient" draggable="true">
+    <img src="images/egg.png" id="cupcake-egg" class="ingredient" draggable="true">
+    <img src="images/vanilla.png" id="cupcake-vanilla" class="ingredient" draggable="true">
+    <img src="images/sugar.png" id="cupcake-sugar" class="ingredient" draggable="true">
+  </div>
+
+  <button id="nextCupcakeStep">next step</button>
+</section>
+
+<script>
+const cupcakeMessage = document.getElementById("cupcake-message");
+const nextCupcakeStepBtn = document.getElementById("nextCupcakeStep");
+
+const cupcakeBowl = document.getElementById("cupcake-bowl");
+const cupcakeOven = document.getElementById("cupcake-oven");
+const cupcakeTray = document.getElementById("cupcake-tray");
+
+const cupcakeSteps = [
+  { title: "step 1: add cupcake ingredients!", message: "drag ingredients into the bowl!" },
+  { title: "step 2: mix the cupcake batter!", message: "mixing your cupcake batter..." },
+  { title: "step 3: bake the cupcakes!", message: "put the cupcakes in the oven!" },
+  { title: "step 4: enjoy!", message: "YAYAY cupcakes!" }
+];
+
+const cupcakeIngredientsList = document.querySelectorAll('#cupcakes .ingredient');
+
+cupcakeIngredientsList.forEach(item => {
+  item.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('text/plain', item.id);
+  });
+});
+
+cupcakeBowl.addEventListener('dragover', e => e.preventDefault());
+
+let cupcakeAdded = [];
+
+cupcakeBowl.addEventListener('drop', e => { 
+  const id = e.dataTransfer.getData('text/plain');
+  const ingredient = document.getElementById(id);
+
+  if (!cupcakeAdded.includes(id)) {
+    cupcakeAdded.push(id);
+    ingredient.style.opacity = "0.5";
+    cupcakeMessage.textContent = `you added ${id}! `;
+
+    if (cupcakeAdded.length === cupcakeIngredientsList.length) {
+      cupcakeMessage.textContent = "all ingredients added! click 'next step' to mix!";
+      nextCupcakeStepBtn.style.display = "inline-block";
+    }
+  }
+});
+
+window.showCupcakes = () => {
+  const cupcakes = document.getElementById("cupcakes");
+  cupcakes.style.display = "block";
+  const cupcakesLink = document.getElementById("cupcakes-link");
+  cupcakesLink.style.display = "inline-block";
+};
+
+let cupcakeCurrentStep = 0;
+let bowlX = 100;
+let bowlY = 100;
+let bowlVX = 3;
+let bowlVY = 2;
+let bowlMoving = false;
+
+function moveCupcakeBowl() {
+  if (!bowlMoving) return;
+
+  const container = document.querySelector("#cupcakes .kitchen");
+
+  const containerWidth = container.clientWidth;
+  const containerHeight = container.clientHeight;
+
+  const bowlWidth = cupcakeBowl.offsetWidth;
+  const bowlHeight = cupcakeBowl.offsetHeight;
+
+  if (bowlX + bowlWidth >= containerWidth || bowlX <= 0) bowlVX *= -1;
+  if (bowlY + bowlHeight >= containerHeight || bowlY <= 0) bowlVY *= -1;
+
+  bowlX += bowlVX;
+  bowlY += bowlVY;
+
+  cupcakeBowl.style.position = "absolute";
+  cupcakeBowl.style.left = bowlX + "px";
+  cupcakeBowl.style.top = bowlY + "px";
+
+  requestAnimationFrame(moveCupcakeBowl);
+}
+
+nextCupcakeStepBtn.addEventListener("click", () => {
+  cupcakeCurrentStep++;
+
+  if (cupcakeCurrentStep === 1) {
+    let mixesNeeded = 100;
+    let mixes = 0;
+
+    const mixCounter = document.getElementById("mixCounter");
+    mixCounter.style.display = "block";
+    mixCounter.textContent = `0 / ${mixesNeeded} mixes`;
+
+    cupcakeMessage.textContent = "click the bowl to mix your cupcake batter!";
+    nextCupcakeStepBtn.style.display = "none";
+
+    bowlMoving = true;
+    requestAnimationFrame(moveCupcakeBowl);
+
+    function handleMixClick() {
+      mixes++;
+      mixCounter.textContent = `${mixes} / ${mixesNeeded} mixes`;
+
+      cupcakeBowl.style.animation = "shake 0.2s ease";
+      setTimeout(() => (cupcakeBowl.style.animation = "none"), 200);
+
+      if (mixes >= mixesNeeded) {
+        cupcakeBowl.removeEventListener("click", handleMixClick);
+
+        bowlMoving = false;
+
+        cupcakeMessage.textContent = "great job mixing! click next step!";
+        nextCupcakeStepBtn.style.display = "inline-block";
+      }
+    }
+
+    cupcakeBowl.addEventListener("click", handleMixClick);
+  }
+  else if (cupcakeCurrentStep === 2) {
+    cupcakeOven.style.display = "flex";
+    cupcakeOven.style.animation = "ovenGlow 1s ease-in-out infinite";
+    cupcakeMessage.textContent = "baking cupcakes... (so fluffy!)";
+
+    setTimeout(() => {
+      cupcakeOven.style.animation = "none";
+      cupcakeMessage.textContent = "cupcakes are baked! click next step!";
+      nextCupcakeStepBtn.style.display = "inline-block";
+    }, 3000);
+  }
+else if (cupcakeCurrentStep === 3) {
+  document.getElementById("cupcakes").style.display = "none";
+  document.getElementById("final").style.display = "block";
+  document.getElementById("final-link").style.display = "inline-block";
+  cupcakeMessage.textContent = "cupcake party timeeeee!!";
+  nextCupcakeStepBtn.style.display = "none";
+}
+});
+</script>
+<section id="final" style="display:none; text-align:center; padding:4rem 2rem;">
+  <h1>thank you for baking with me!</h1>
+  <p style="font-size:1.3rem; margin-top:1rem;">
+ thanks for baking! i hope you had fun making cookies and cupcakes. remember, the best ingredient is always love! 
+  </p>
+  <p style="margin-top:2rem; font-size:1.2rem;">have the sweetest birthday ever!✨</p>
+</section>
+<footer>
+  <p>made nov 2025 with ❤️ by diya panthulu. enjoy the birthday bakery items! song 2 is played by me. also attribution to freepik for all of the icons!</p>
+</footer>
+</body>
+</html>
